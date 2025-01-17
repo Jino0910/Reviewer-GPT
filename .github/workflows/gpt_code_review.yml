@@ -26,8 +26,13 @@ jobs:
 
     - name: Run GPT Code Review
       run: |
-        for file in $(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-        do
-          echo "Reviewing $file"
-          python gpt_reviewer.py $file
-        done
+        git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} > changed_files.txt
+        while IFS= read -r file; do
+            echo "Reviewing file: $file"
+            review=$(python3 gpt_code_review.py "$file")
+            gh pr comment ${{ github.event.pull_request.number }} --body "$review"
+        done < changed_files.txt
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+
