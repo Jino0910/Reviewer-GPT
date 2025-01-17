@@ -10,10 +10,20 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
+    var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let user = User(id: 1, name: "John Doe", email: "john.doe@example.com", bio: "iOS Developer")
+        let viewModel = UserViewModel(user: user)
+        let viewController = UserProfileViewController(viewModel: viewModel)
+        
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = viewController
+        window.makeKeyAndVisible()
+        self.window = window
+        
         return true
     }
 
