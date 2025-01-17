@@ -10,7 +10,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+        with:
+            fetch-depth: 0 # 전체 Git 기록을 가져옵니다. (base 커밋 참조를 위해 필수)
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -23,14 +24,17 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          # 동적으로 base와 head 커밋 가져오기
+          # PR의 base 및 head SHA 가져오기
           base_sha="${{ github.event.pull_request.base.sha }}"
           head_sha="${{ github.event.pull_request.head.sha }}"
 
-          # 변경된 파일 목록 가져오기
+          echo "Base SHA: $base_sha"
+          echo "Head SHA: $head_sha"
+
+          # 변경된 파일 목록 생성
           git diff --name-only "$base_sha" "$head_sha" > changed_files.txt
 
-          # 변경된 파일들을 리뷰
+          # 변경된 파일 리뷰 실행
           while IFS= read -r file; do
             echo "Reviewing file: $file"
             review=$(python3 gpt_code_review.py "$file")
