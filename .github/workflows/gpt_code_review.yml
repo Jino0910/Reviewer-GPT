@@ -7,31 +7,34 @@ on:
 jobs:
   review:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-            fetch-depth: 0 # 전체 Git 기록을 가져옵니다. (base 커밋 참조를 위해 필수)
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Install OpenAI library
-        run: pip install openai
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
 
-      - name: Run GPT Code Review
-        run: |
-            base_sha="$(git rev-parse origin/main~1)"
-            head_sha="$(git rev-parse HEAD)"
-            echo "Base SHA: $base_sha"
-            echo "Head SHA: $head_sha"
+    - name: Install OpenAI library
+      run: pip install openai
 
-            git diff --name-only "$base_sha" "$head_sha" > changed_files.txt
+    - name: Run GPT Code Review
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        # PR의 base와 head SHA 가져오기
+        base_sha="$(git rev-parse origin/main~1)"
+        head_sha="$(git rev-parse HEAD)"
 
-            while IFS= read -r file; do
-            echo "Reviewing file: $file"
-            review=$(python3 gpt_reviewer.py "$file")
-            echo "$review"
-            gh pr comment 1 --body "$review"
-            done < changed_files.txt
+        # 변경된 파일 목록 가져오기
+        git diff --name-only "$base_sha" "$head_sha" > changed_files.txt
+
+        # 변경된 파일들을 리뷰
+        while IFS= read -r file; do
+          echo "Reviewing file: $file"
+          review=$(python3 gpt_reviewer.py "$file")
+          echo "$review"
+          gh pr comment 1 --body "$review"
+        done < changed_files.txt
