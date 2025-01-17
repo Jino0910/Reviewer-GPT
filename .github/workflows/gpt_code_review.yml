@@ -25,8 +25,11 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
         # PR의 base와 head SHA 가져오기
-        base_sha="$(git rev-parse origin/main~1)"
-        head_sha="$(git rev-parse HEAD)"
+        base_sha="${{ github.event.pull_request.base.sha }}"
+        head_sha="${{ github.event.pull_request.head.sha }}"
+
+        echo "Base SHA: $base_sha"
+        echo "Head SHA: $head_sha"
 
         # 변경된 파일 목록 가져오기
         git diff --name-only "$base_sha" "$head_sha" > changed_files.txt
