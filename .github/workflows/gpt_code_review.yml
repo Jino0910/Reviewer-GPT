@@ -1,0 +1,33 @@
+name: GPT Code Reviewer
+
+on:
+  pull_request:
+    paths:
+      - '**/*.swift'
+      - '**/*.h'
+      - '**/*.m'
+      - '**/*.cpp'
+      - '**/*.java'
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install OpenAI library
+      run: pip install openai
+
+    - name: Run GPT Code Review
+      run: |
+        for file in $(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+        do
+          echo "Reviewing $file"
+          python gpt_reviewer.py $file
+        done
