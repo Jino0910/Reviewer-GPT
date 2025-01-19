@@ -9,7 +9,7 @@ def review_code(file_content):
     try:
         # GPT-4 모델 호출
         response = openai.ChatCompletion.create(
-            model="gpt-4o",  # GPT-4 모델 사용
+            model="gpt-4o-mini",  # GPT-4 모델 사용
             messages=[
                 {
                     "role": "system",
