@@ -10,7 +10,10 @@ on:
       - '**/*.java'
 
 jobs:
-  steps:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
