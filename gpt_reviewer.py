@@ -1,5 +1,6 @@
 import openai
 import sys
+import os
 
 # OpenAI API Key 설정
 openai.api_key = os.getenv("OPENAI_API_KEY")
