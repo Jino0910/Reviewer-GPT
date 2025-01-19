@@ -25,7 +25,7 @@ jobs:
         python-version: '3.9'
 
     - name: Install OpenAI library
-      run: pip install --upgrade openai
+      run: pip install openai==0.28
 
     - name: PR의 base와 head SHA 가져오기
       run: |
