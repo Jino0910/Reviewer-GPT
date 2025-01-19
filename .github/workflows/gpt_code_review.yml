@@ -2,48 +2,54 @@ name: GPT Code Reviewer
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    paths:
+      - '**/*.swift'
+      - '**/*.h'
+      - '**/*.m'
+      - '**/*.cpp'
+      - '**/*.java'
 
 jobs:
-  review:
-    runs-on: ubuntu-latest
-
-    steps:
+  steps:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0 # 모든 커밋 히스토리를 가져옵니다.
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-          python-version: '3.9' # Python 버전 지정
+        python-version: '3.9'
 
     - name: Install OpenAI library
       run: pip install openai
 
     - name: PR의 base와 head SHA 가져오기
       run: |
-          git fetch origin main
-          base_sha=$(git merge-base HEAD origin/main)
-          head_sha=$(git rev-parse HEAD)
-          echo "Base SHA: $base_sha"
-          echo "Head SHA: $head_sha"
-          echo "$base_sha" > base_sha.txt
-          echo "$head_sha" > head_sha.txt
+        git fetch origin main
+        base_sha=$(git merge-base HEAD origin/main)
+        head_sha=$(git rev-parse HEAD)
+        echo "Base SHA: $base_sha"
+        echo "Head SHA: $head_sha"
+        echo "$base_sha" > base_sha.txt
+        echo "$head_sha" > head_sha.txt
 
     - name: 변경된 파일 목록 가져오기
       run: |
-          base_sha=$(cat base_sha.txt)
-          head_sha=$(cat head_sha.txt)
-          git diff --name-only "$base_sha" "$head_sha" > changed_files.txt
-          cat changed_files.txt
+        base_sha=$(cat base_sha.txt)
+        head_sha=$(cat head_sha.txt)
+        git diff --name-only "$base_sha" "$head_sha" > changed_files.txt
 
     - name: Run GPT Code Review
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-          while IFS= read -r file; do
-            echo "Reviewing file: $file"
-            review=$(python3 gpt_reviewer.py "$file")
-            echo "$review"
-            gh pr comment 1 --body "$review"
-          done < changed_files.txt
+        while IFS= read -r file; do
+          echo "Reviewing file: $file"
+          review=$(python3 ./gpt_reviewer.py "$file")
+          echo "$review"
+          gh pr comment ${{ github.event.pull_request.number }} --body "$review"
+        done < changed_files.txt
+
+
